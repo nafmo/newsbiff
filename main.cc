@@ -17,19 +17,39 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-#include <String.h>
+#include <string>
 #include <stdlib.h>
+#include <getopt.h>
 #include "news.h"
 
 int main(int argc, char **argv)
 {
-	CNewsServer	server(String("news.mdh.se"));
-	String newsrc = String(getenv("HOME")) + "/.newsrc";
+	int option;
+	string servername = getenv("NNTPSERVER") ? string(getenv("NNTPSERVER"))
+	                                         : "news.mdh.se";
+	string newsrc = string(getenv("HOME")) + "/.newsrc";
+
+	while (-1 != (option = getopt(argc, argv, "s:n:")))
+	{
+		switch (option)
+		{
+			case 's':
+				servername = optarg;
+				break;
+
+			case 'n':
+				newsrc = optarg;
+				break;
+		}
+	}
+
+	CNewsServer	server(servername);
 	int a = server.CheckLastRead(newsrc);
 	cout << a;
 
-	if (argc > 1)
+	if (argc > optind)
 		cout << " totalt, varav: " << endl;
-	for (int i = 1; i < argc; i ++)
-		cout << argv[i] << ": " << server.QueryUnread(String(argv[i])) << endl;
+	for (int i = optind; i < argc; i ++)
+		cout << argv[i] << ": " << server.QueryUnread(string(argv[i])) << endl;
+cout << endl;
 }
