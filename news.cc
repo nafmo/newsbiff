@@ -30,9 +30,9 @@ static const char *s_list = "LIST\n";
 static const char *s_quit = "QUIT\n";
 
 // Constructor -- connect to a news server
-CNewsServer::CNewsServer(String servername)
+CNewsServer::CNewsServer(string servername)
 {
-	socket = ConnectTCP(servername, NNTP);
+	socket = ConnectTCP(servername.c_str(), NNTP);
 	used = false;
 	list_p = NULL;
 	
@@ -76,7 +76,7 @@ CNewsServer::~CNewsServer()
 }
 
 // Check number of unread (total)
-unsigned int CNewsServer::CheckLastRead(String newsrcfile)
+unsigned int CNewsServer::CheckLastRead(string newsrcfile)
 {
 	if (-1 == socket) return 0; // Socket not open
 	if (used) return totalunread; // We already have the total
@@ -88,14 +88,14 @@ unsigned int CNewsServer::CheckLastRead(String newsrcfile)
 	FILE		*newsrc;
 	char		data[1024], *p1, *p2;
 
-	newsrc = fopen(newsrcfile, "r");
+	newsrc = fopen(newsrcfile.c_str(), "r");
 	if (NULL == newsrc) return 0; // Unable to open newsrc file
 	
 	while (NULL != fgets(data, sizeof(data), newsrc))
 	{
 		data[sizeof(data) - 1] = 0; // Be sure to zero terminate string
 		
-		if (NULL != (p1 = strchr(data, ':')))
+		if (NULL != (p1 = strchr(data, ':')) && *(p1 + 1))
 		{
 			// This is an active entry
 			// The highest number should be on the right
@@ -157,7 +157,8 @@ unsigned int CNewsServer::CheckLastRead(String newsrcfile)
 				if (trav_p->group == buf)
 				{
 					// Match
-					unread += topnumber - trav_p->lastread;
+					if (trav_p->lastread && topnumber > trav_p->lastread)
+						unread += topnumber - trav_p->lastread;
 					trav_p->topnumber = topnumber;
 					trav_p = NULL;
 				}
@@ -174,7 +175,7 @@ unsigned int CNewsServer::CheckLastRead(String newsrcfile)
 }
 
 // Check the number of unread articles in a group
-unsigned int CNewsServer::QueryUnread(String groupname)
+unsigned int CNewsServer::QueryUnread(string groupname)
 {
 	if (!used) return 0; // We do not know the number of unread
 
