@@ -108,7 +108,6 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 				p2 ++;
 				// Zero terminate newsgroup name
 				*p1 = 0;
-//cout << "NG name: " << data << "  Lastread: " << p2;
 				// Allocate and fill in lastread entry
 				lastread_t	*this_p = new lastread_t;
 				this_p->group = data;
@@ -127,7 +126,6 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 	
 	if (215 != NntpResponse())
 	{
-cout << "Error in response code from LIST" << endl;		
 		return -1;
 	}
 	
@@ -149,7 +147,6 @@ cout << "Error in response code from LIST" << endl;
 			*p1 = 0;
 			*p2 = 0;
 			int topnumber = atoi(p1 + 1);
-//cout << "Interpreted: NG = " << buf << " top = " << topnumber << endl;
 			
 			// Locate in our list of newsgroups
 			trav_p = list_p;
@@ -158,9 +155,6 @@ cout << "Error in response code from LIST" << endl;
 				if (trav_p->group == buf)
 				{
 					// Match
-//cout << "Match: \"" << trav_p->group << "\" and \"" << buf << "\"" << endl;
-//cout << "Unread: " << topnumber << " - " << trav_p->lastread << "." << endl;
-
 					unread += topnumber - trav_p->lastread;
 					trav_p = NULL;
 				}
@@ -172,8 +166,6 @@ cout << "Error in response code from LIST" << endl;
 		}
 	}
 
-//cout << "Total: " << unread << endl;
-	
 	return unread;
 }
 
@@ -196,9 +188,6 @@ int CNewsServer::NntpResponse(void)
 	if (10 == retries)
 	{
 		int response = atoi(buf);
-//cout << "Response:" << endl;
-//cout << buf << endl;
-//cout << "Interpreted: " << response << endl;
 		return response;
 	}
 	else
