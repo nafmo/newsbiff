@@ -25,7 +25,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-static const char *s_modereader = "MODE READER\r\n";
+static const char *s_modereader = "MODE READER\n";
 static const char *s_list = "LIST\n";
 static const char *s_quit = "QUIT\n";
 
@@ -76,10 +76,10 @@ CNewsServer::~CNewsServer()
 }
 
 // Check number of unread (total)
-int CNewsServer::CheckLastRead(String newsrcfile)
+unsigned int CNewsServer::CheckLastRead(String newsrcfile)
 {
-	if (-1 == socket) return -1; // Socket not open
-	if (used) return -1; // May only use each object once
+	if (-1 == socket) return 0; // Socket not open
+	if (used) return totalunread; // We already have the total
 
 	used = true;
 	
@@ -89,7 +89,7 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 	char		data[1024], *p1, *p2;
 
 	newsrc = fopen(newsrcfile, "r");
-	if (NULL == newsrc) return -1; // Unable to open newsrc file
+	if (NULL == newsrc) return 0; // Unable to open newsrc file
 	
 	while (NULL != fgets(data, sizeof(data), newsrc))
 	{
@@ -112,6 +112,7 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 				lastread_t	*this_p = new lastread_t;
 				this_p->group = data;
 				this_p->lastread = atoi(p2);
+				this_p->topnumber = 0;
 				this_p->next = NULL;
 				if (trav_p) trav_p->next = this_p;
 				if (!list_p) list_p = this_p;
@@ -126,17 +127,18 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 	
 	if (215 != NntpResponse())
 	{
-		return -1;
+		return 0;
 	}
 	
 	char buf[1024];
 	int retries = 0;
 
-	int	unread = 0, len;
+	unsigned int	unread = 0, len;
 
 	// Retrieve newsgruop list
 	while ((len = ReadLine(socket, buf, sizeof(buf))) != 2) // Len2=end
 	{
+		// The returned data from the news server is on the form:
 		// NGNAME HIGHEST NUMBER STATUS
 		// str    int     int    char
 		char *p1, *p2;
@@ -156,6 +158,7 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 				{
 					// Match
 					unread += topnumber - trav_p->lastread;
+					trav_p->topnumber = topnumber;
 					trav_p = NULL;
 				}
 				else
@@ -166,7 +169,38 @@ int CNewsServer::CheckLastRead(String newsrcfile)
 		}
 	}
 
+	totalunread = unread;
 	return unread;
+}
+
+// Check the number of unread articles in a group
+unsigned int CNewsServer::QueryUnread(String groupname)
+{
+	if (!used) return 0; // We do not know the number of unread
+
+	// Locate in our list of newsgroups
+	lastread_t	*trav_p = list_p;
+	while (NULL != trav_p)
+	{
+		if (trav_p->group == groupname)
+		{
+			// Match
+			if (trav_p->topnumber > trav_p->lastread)
+			{
+				return trav_p->topnumber - trav_p->lastread;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			trav_p = trav_p->next;
+		}
+	}
+
+	return 0;
 }
 
 // Retrieve response number from NNTP server

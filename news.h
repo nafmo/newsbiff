@@ -32,7 +32,11 @@ public:
 	~CNewsServer();
 
 	// Method for checking numer of unread (total)
-	int CheckLastRead(String newsrcfile);
+	unsigned int CheckLastRead(String newsrcfile);
+
+	// Method for querying the number of unread in a group
+	// (can be used only after CheckLastRead has been called)
+	unsigned int QueryUnread(String groupname);
 
 protected:
 	// Internal methods
@@ -42,14 +46,16 @@ protected:
 	struct lastread_t
 	{
 		String				group;
-		int					lastread;
+		unsigned int		lastread;
+		unsigned int		topnumber;
 		struct lastread_t	*next;
 	};
 
 	// Internal data
-	String		servername;
-	int			socket;
-	bool		used;
-	lastread_t	*list_p;
+	String			servername;
+	int				socket;
+	bool			used;
+	lastread_t		*list_p;
+	unsigned int	totalunread;
 };
 #endif
