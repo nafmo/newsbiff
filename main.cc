@@ -26,7 +26,6 @@ int main(int argc, char **argv)
 	CNewsServer	server(String("news.mdh.se"));
 	String newsrc = String(getenv("HOME")) + "/.newsrc";
 	int a = server.CheckLastRead(newsrc);
-	cout << newsrc << endl;
 	cout << a;
 
 	if (argc > 1)
