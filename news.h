@@ -19,7 +19,7 @@
 
 #ifndef __NEWS_H
 #define __NEWS_H
-#include <String.h>
+#include <string>
 
 // Port number
 #define NNTP 119
@@ -28,15 +28,15 @@ class CNewsServer
 {
 public:
 	// Constructor and destructor
-	CNewsServer(String servername);
+	CNewsServer(string servername);
 	~CNewsServer();
 
 	// Method for checking numer of unread (total)
-	unsigned int CheckLastRead(String newsrcfile);
+	unsigned int CheckLastRead(string newsrcfile);
 
 	// Method for querying the number of unread in a group
 	// (can be used only after CheckLastRead has been called)
-	unsigned int QueryUnread(String groupname);
+	unsigned int QueryUnread(string groupname);
 
 protected:
 	// Internal methods
@@ -45,14 +45,14 @@ protected:
 	// Internal structure used
 	struct lastread_t
 	{
-		String				group;
+		string				group;
 		unsigned int		lastread;
 		unsigned int		topnumber;
 		struct lastread_t	*next;
 	};
 
 	// Internal data
-	String			servername;
+	string			servername;
 	int				socket;
 	bool			used;
 	lastread_t		*list_p;
