@@ -1,5 +1,5 @@
 newsbiff: main.o news.o tcp.o
-	g++ -o newsbiff main.o news.o tcp.o -lg++
+	g++ -o newsbiff main.o news.o tcp.o -lstdc++
 
 main.o: main.cc news.h
 	g++ -c main.cc
